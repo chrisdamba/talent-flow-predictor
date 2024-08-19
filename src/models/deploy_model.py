@@ -1,5 +1,4 @@
 import json
-
 import mlflow
 import sagemaker
 from sagemaker.mlflow import MLflowModel
@@ -11,23 +10,16 @@ def load_config():
 
 
 def deploy_model_to_sagemaker(run_id, config):
-    # Set up MLflow tracking URI
     mlflow.set_tracking_uri(config['mlflow_tracking_uri'])
-
-    # Load the model from MLflow
     model_uri = f"runs:/{run_id}/model"
-
-    # Set up SageMaker session
     sagemaker_session = sagemaker.Session()
 
-    # Create SageMaker-compatible model
     mlflow_model = MLflowModel(
         model_uri=model_uri,
         role=config['sagemaker_role_arn'],
-        image_uri=config.get('sagemaker_container_image_uri')  # Optional: Use a custom container if needed
+        image_uri=config.get('sagemaker_container_image_uri')
     )
 
-    # Deploy the model to SageMaker
     predictor = mlflow_model.deploy(
         initial_instance_count=1,
         instance_type="ml.m5.large",
@@ -39,15 +31,12 @@ def deploy_model_to_sagemaker(run_id, config):
 
 
 def test_endpoint(predictor, test_data):
-    # Assuming test_data is a list of dictionaries, each representing a song
     response = predictor.predict(test_data)
     print("Test prediction results:", response)
 
 
 def main():
     config = load_config()
-
-    # Assuming the latest run ID is stored somewhere, or you can pass it as an argument
     latest_run_id = config.get('latest_mlflow_run_id')
 
     if not latest_run_id:
@@ -56,9 +45,10 @@ def main():
 
     predictor = deploy_model_to_sagemaker(latest_run_id, config)
 
-    # Optional: Test the deployed endpoint
     test_data = [
-        {"duration": 230, "tempo": 120, "loudness": -5, "year": 2010}
+        {"job_title": "Data Scientist", "company_name": "Tech Corp", "job_location": "New York",
+         "job_skills": "Python,Machine Learning,SQL", "posting_year": 2024, "posting_month": 6,
+         "job_level": "Mid-level", "skill_count": 3, "industry": "Technology", "salary_value": 100000}
     ]
     test_endpoint(predictor, test_data)
 

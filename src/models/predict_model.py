@@ -1,13 +1,9 @@
 import json
-from io import BytesIO
-
 import mlflow
 import mlflow.sklearn
 import pandas as pd
-import boto3
 
-from src.data.load_data import load_data_from_s3, prepare_data
-from src.models.train_model import train_model
+from src.data.load_data import prepare_data
 
 
 def load_model(run_id, config):
@@ -20,11 +16,19 @@ def make_predictions(model, X):
 
 
 def main():
-    # Load configuration
     with open('config.json', 'r') as f:
         config = json.load(f)
 
-    pass
+    X, y, features = prepare_data(config)
+
+    run_id = config.get('latest_mlflow_run_id')
+    model = load_model(run_id, config)
+
+    predictions = make_predictions(model, X)
+
+    results = pd.DataFrame({'actual': y, 'predicted': predictions})
+    results.to_csv('hiring_trend_predictions.csv', index=False)
+    print("Predictions saved to hiring_trend_predictions.csv")
 
 
 if __name__ == "__main__":
