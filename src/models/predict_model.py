@@ -22,6 +22,9 @@ def main():
     X, y, features = prepare_data(config)
 
     run_id = config.get('latest_mlflow_run_id')
+    if not run_id:
+        raise ValueError("No MLflow run ID found in the configuration.")
+
     model = load_model(run_id, config)
 
     predictions = make_predictions(model, X)

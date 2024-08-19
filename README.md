@@ -28,7 +28,7 @@ We're using a dataset of 1.3 million job listings collected from LinkedIn in 202
 
 ### Architecture
 
-![mlops-architecture](images/MLOPs_Architecture.jpg)
+![mlops-architecture](images/MLOps_Architecture.jpg)
 
 ## Setup
 

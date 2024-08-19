@@ -26,8 +26,8 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     df['job_location'] = df['job_location'].fillna('Unknown')
     df['job_skills'] = df['job_skills'].fillna('')
 
-    # Remove duplicates
-    df.drop_duplicates(subset=['job_link'], keep='first', inplace=True)
+    # Remove duplicates (using all columns since we don't have a specific 'job_link')
+    df.drop_duplicates(keep='first', inplace=True)
 
     # Convert salary to numeric and handle currency
     df['salary_currency'] = df['job_salary'].str.extract(r'(\$|€|£)')
@@ -44,20 +44,29 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     df['posting_month'] = df['date_posted'].dt.month
 
     # Create a job level feature
-    df['job_level'] = df['job_title'].apply(lambda x: 'Senior' if 'Senior' in x or 'Sr.' in x
-                                            else 'Junior' if 'Junior' in x or 'Jr.' in x
-                                            else 'Mid-level')
+    def get_job_level(title):
+        if pd.isna(title):
+            return 'Unknown'
+        elif 'Senior' in title or 'Sr.' in title:
+            return 'Senior'
+        elif 'Junior' in title or 'Jr.' in title:
+            return 'Junior'
+        else:
+            return 'Mid-level'
+
+    df['job_level'] = df['job_title'].apply(get_job_level)
 
     # Create a skill count feature
-    df['skill_count'] = df['job_skills'].str.count(',') + 1
+    df['skill_count'] = df['job_skills'].fillna('').str.count(',') + 1
 
     # Create an industry feature (this is a simplification, you might want to use a more sophisticated method)
-    df['industry'] = df['job_description'].apply(lambda x: x.split(' in ')[-1].split('.')[0] if ' in ' in x else 'Unknown')
+    df['industry'] = df['job_description'].apply(
+        lambda x: x.split(' in ')[-1].split('.')[0] if pd.notna(x) and ' in ' in x else 'Unknown')
 
     return df
 
 
-def prepare_data(config: dict) -> Tuple[pd.DataFrame, pd.DataFrame, list[str]]:
+def prepare_data(config: dict) -> Tuple[pd.DataFrame, pd.Series, list[str]]:
     """Prepare the dataset for machine learning."""
     # Load data from S3
     df = load_data_from_s3(config['s3_key_name'], config['s3_bucket_name'])
@@ -69,14 +78,17 @@ def prepare_data(config: dict) -> Tuple[pd.DataFrame, pd.DataFrame, list[str]]:
     df = engineer_features(df)
 
     # Select features for the model
-    features = ['job_title', 'company_name', 'job_location', 'job_skills', 'posting_year', 'posting_month',
-                'job_level', 'skill_count', 'industry', 'salary_value']
+    features = ['job_title', 'company_name', 'job_location', 'job_skills', 'posting_year',
+                'posting_month', 'job_level', 'skill_count', 'industry']
+
+    # Only use features that are actually present in the DataFrame
+    available_features = [f for f in features if f in df.columns]
 
     # Prepare X and y
-    X = df[features]
-    y = df['salary_value']  # Using salary as a proxy for hiring trend, adjust as needed
+    X = df[available_features]
+    y = df['salary_value'] if 'salary_value' in df.columns else pd.Series(dtype='float64')
 
-    return X, y, features
+    return X, y, available_features
 
 
 if __name__ == "__main__":

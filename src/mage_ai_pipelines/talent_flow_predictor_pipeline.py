@@ -12,8 +12,21 @@ from src.data.load_data import prepare_data
 
 @data_loader
 def load_data(*args, **kwargs):
-    with open('config.json', 'r') as f:
-        config = json.load(f)
+    """
+    Load data from S3 using the configuration
+    """
+    try:
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+    except FileNotFoundError:
+        # Use a default configuration if the file is not found
+        config = {'s3_bucket_name': 'default-bucket', 's3_key_name': 'default-key.parquet'}
+
+    # Ensure all required keys are present
+    required_keys = ['s3_bucket_name', 's3_key_name']
+    for key in required_keys:
+        if key not in config:
+            raise KeyError(f"Required key '{key}' not found in configuration")
 
     X, y, features = prepare_data(config)
     return X, y, features

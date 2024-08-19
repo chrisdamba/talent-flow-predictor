@@ -12,7 +12,7 @@ def load_config():
 def deploy_model_to_sagemaker(run_id, config):
     mlflow.set_tracking_uri(config['mlflow_tracking_uri'])
     model_uri = f"runs:/{run_id}/model"
-    sagemaker_session = sagemaker.Session()
+    sagemaker.Session()
 
     mlflow_model = MLflowModel(
         model_uri=model_uri,
