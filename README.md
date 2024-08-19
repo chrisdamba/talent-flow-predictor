@@ -28,7 +28,7 @@ We're using a dataset of 1.3 million job listings collected from LinkedIn in 202
 
 ### Architecture
 
-![mlops-architecture](images/TalentFlowPredictor_Architecture.jpg)
+![mlops-architecture](images/MLOPs_Architecture.jpg)
 
 ## Setup
 
@@ -45,8 +45,8 @@ We're using a dataset of 1.3 million job listings collected from LinkedIn in 202
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/TalentFlowPredictor.git
-   cd TalentFlowPredictor
+   git clone https://github.com/chrisdamba/talent-flow-predictor.git
+   cd talent-flow-predictor
    ```
 
 2. Set up the infrastructure with Terraform:
@@ -74,7 +74,7 @@ We're using a dataset of 1.3 million job listings collected from LinkedIn in 202
 ## Project Structure
 
 ```
-TalentFlowPredictor/
+talent-flow-predictor/
 ├── data/
 ├── models/
 ├── notebooks/
@@ -95,9 +95,8 @@ TalentFlowPredictor/
 │   ├── deployment.md
 │   └── monitoring.md
 ├── terraform/
-├── .github/workflows/
+├── .github/workflows/ci_cd.yml
 ├── Dockerfile
-├── docker-compose.yml
 ├── requirements.txt
 ├── README.md
 └── .gitignore
